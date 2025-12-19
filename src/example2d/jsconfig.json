@@ -3,5 +3,5 @@
     "target": "ES2024",
     "checkJs": true // Enable type checking for JavaScript files
   },
-  "include": ["**/*.js", "types/*.d.ts"]
+  "include": ["**/*.js", "../common/**/*.js", "../../types/*.d.ts"]
 }

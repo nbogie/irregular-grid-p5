@@ -10,7 +10,6 @@
 /** @typedef {Object} Placement
  * @property {Pos} pos
  * @property {Dims} dims
- * @property {string} colour
  */
 
 /**
@@ -74,7 +73,6 @@ function attemptPlacement(pos, shapeGenFn, pls) {
     const placement = {
       dims,
       pos: { x: pos.x, y: pos.y },
-      colour: random(palette.allColours),
     };
     pls.push(placement);
   }
