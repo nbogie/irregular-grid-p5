@@ -28,6 +28,7 @@ let myCam;
  * @property {number} gap
  * @property {number} baseHeightScale
  * @property {boolean} enableStroke
+ * @property {boolean} enableBadOutline
  * @property {boolean} enableFill
  * @property {boolean} enableLights
  * @property {boolean} enableTransparent
@@ -52,6 +53,7 @@ function regenerate() {
     gap: 5,
     baseHeightScale: 2,
     enableStroke: frameCount < 2 ? true : random() < 0.2,
+    enableBadOutline: random([true, false, false]),
     enableTransparent: false,
     enableCameraAnimation: false,
     enableFill: true,
@@ -101,7 +103,7 @@ function drawPlacements3D(placements) {
 
   placements.forEach((pl) => {
     push();
-    if (config.enableStroke) {
+    if (config.enableStroke && !config.enableBadOutline) {
       strokeWeight(1);
       stroke(palette.placementOutline);
     } else {
@@ -116,6 +118,7 @@ function drawPlacements3D(placements) {
     const w = cellSize * pl.dims.w;
     const h = cellSize * pl.dims.h;
     const d = cellSize * config.baseHeightScale * pl.heightScale;
+    push();
     translate(w / 2, -d / 2, h / 2);
     if (config.enableFill) {
       fill(c);
@@ -125,6 +128,19 @@ function drawPlacements3D(placements) {
     }
 
     box(w - config.gap, d, h - config.gap);
+    pop();
+    if (config.enableBadOutline) {
+      push();
+      const angle = 0.03;
+      translate(w / 2, -d / 2, h / 2);
+      rotateX(angle);
+      rotateY(angle);
+      rotateZ(angle);
+      noFill();
+      stroke(0.1);
+      box(w - config.gap * 1.1, d, h - config.gap * 1.1);
+      pop();
+    }
     pop();
   });
 }
@@ -162,6 +178,9 @@ function keyPressed() {
     } else {
       config.enableStroke = !config.enableStroke;
     }
+  }
+  if (key === "b") {
+    config.enableBadOutline = !config.enableBadOutline;
   }
   if (key === "a") {
     config.enableTransparent = !config.enableTransparent;
