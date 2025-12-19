@@ -154,7 +154,7 @@ function mousePressed() {
 }
 
 function keyPressed() {
-  if (key === "r") {
+  if (key === "r" || key === " ") {
     regenerate();
   }
   if (key === "p") {
