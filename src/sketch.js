@@ -45,9 +45,6 @@ function createPalette() {
  * @property {string} colour
  */
 
-/** @type {Placement[]} */
-let placements = [];
-
 /** @type {Config} */
 let config;
 
@@ -60,42 +57,31 @@ function setup() {
 
 function draw() {
   background(palette.bg);
-  drawIrregularGrid();
+  createAndDrawIrregularGrid();
 }
 
-function drawIrregularGrid() {
-  /** @type {Pos[]} */
-  const allCellPositions = [];
-  for (let y = 0; y < 10; y++) {
-    for (let x = 0; x < 10; x++) {
-      const pos = { x, y };
-      allCellPositions.push(pos);
-    }
-  }
-  /**
-   * @param {Pos} pos
-   * @returns {boolean}
-   */
-  function isEmpty(pos) {
-    return !placements.some((placement) =>
-      placementCoversPosition(placement, pos)
-    );
-  }
-  allCellPositions.forEach((pos) => {
-    //TODO: consider whether this non 1x1 shape fits
-    if (isEmpty(pos)) {
-      const w = random([1, 2, 3]);
-      const h = random([1, 2, 3]);
-      /**@type {Placement} */
-      const placement = {
-        dims: { w, h },
-        pos: { x: pos.x, y: pos.y },
-        colour: random(palette.allColours),
-      };
-      placements.push(placement);
-    }
-  });
+/**
+ * @param {Pos} pos
+ * @returns {boolean}
+ */
+function isEmpty(pos, placements) {
+  return !placements.some((placement) =>
+    placementCoversPosition(placement, pos)
+  );
+}
+function createAndDrawIrregularGrid() {
+  const allCellPositions = generateAllCellPositions();
+  const placements = makePlacements(allCellPositions);
+  drawPlacements(placements);
+  drawCellGuides();
+}
+/**
+ *
+ * @param {Placement[]} placements
+ */
+function drawPlacements(placements) {
   const cellSize = config.cellSize;
+
   placements.forEach((pl) => {
     push();
     translate(pl.pos.x * cellSize, pl.pos.y * cellSize);
@@ -103,8 +89,8 @@ function drawIrregularGrid() {
     rect(0, 0, cellSize * pl.dims.w, cellSize * pl.dims.h);
     pop();
   });
-  drawCellGuides();
 }
+
 function drawCellGuides() {
   console.log({ palette });
   const { cellSize } = config;
@@ -131,4 +117,42 @@ function placementCoversPosition(placement, targetPos) {
 
 function mousePressed() {
   redraw();
+}
+
+function generateAllCellPositions() {
+  const numRows = floor(height / config.cellSize);
+  const numCols = floor(width / config.cellSize);
+  /** @type {Pos[]} */
+  const posns = [];
+  for (let y = 0; y < numRows; y++) {
+    for (let x = 0; x < numCols; x++) {
+      const pos = { x, y };
+      posns.push(pos);
+    }
+  }
+  return posns;
+}
+/**
+ *
+ * @param {Pos[]} allCellPositions
+ * @return {Placement[]}
+ */
+function makePlacements(allCellPositions) {
+  const pls = [];
+  allCellPositions.forEach((pos) => {
+    //TODO: consider whether this non 1x1 shape fits
+    if (isEmpty(pos, pls)) {
+      const w = random([1, 2, 3]);
+      const h = random([1, 2, 3]);
+      console.log(JSON.stringify({ w, h }));
+      /**@type {Placement} */
+      const placement = {
+        dims: { w, h },
+        pos: { x: pos.x, y: pos.y },
+        colour: random(palette.allColours),
+      };
+      pls.push(placement);
+    }
+  });
+  return pls;
 }
