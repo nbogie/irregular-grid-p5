@@ -25,6 +25,7 @@ let myCam;
  * @property {boolean} enableStroke
  * @property {boolean} enableFill
  * @property {boolean} enableTransparent
+ * @property {boolean} enableCameraAnimation
  * @property {number} worldWidth
  *
  */
@@ -33,11 +34,7 @@ function setup() {
   const dim = min(windowWidth, windowHeight);
 
   createCanvas(dim, dim, WEBGL);
-  frustum(-width / 20, width / 20, -height / 20, height / 20, 20, 2000);
-  // frustum(-10, 10, -10, 10, 300, 350);
-
-  // The last two parameters, near and far, set the distance of the frustum’s near and far plane from the camera. For example, calling ortho(-100, 100, 200, -200, 50, 1000) creates a frustum that’s 200 pixels wide, 400 pixels tall, starts 50 pixels from the camera, and ends 1,000 pixels from the camera. By default, near is set to 0.1 * 800, which is 1/10th the default distance between the camera and the origin. far is set to 10 * 800
-
+  perspective(2 * atan(height / 2 / 800), width / height, 1, 2000);
   regenerate();
 }
 
@@ -48,6 +45,7 @@ function regenerate() {
     gap: 0.1,
     enableStroke: false,
     enableTransparent: false,
+    enableCameraAnimation: true,
     enableFill: true,
 
     worldWidth: width,
@@ -69,7 +67,9 @@ function regenerate() {
 function draw() {
   background(palette.bg);
   orbitControl();
-  updateCamera();
+  if (config.enableCameraAnimation) {
+    updateCamera();
+  }
   lights();
   directionalLight(color(100), createVector(-0.5, 1, 0.2));
   drawPlacements3D(placements);
@@ -118,16 +118,27 @@ function drawPlacements3D(placements) {
 }
 
 function mousePressed() {
-  redraw();
+  if (random([true, false])) {
+    randomiseCameraPosition();
+  } else {
+    randomiseCameraLookAt();
+  }
 }
 
 function keyPressed() {
   if (key === "r") {
     regenerate();
   }
+  if (key === "p") {
+    palette = createPalette();
+    assignColours();
+  }
   if (key === "f") {
     config.enableFill = !config.enableFill;
     config.enableStroke = !config.enableFill;
+  }
+  if (key === "c") {
+    config.enableCameraAnimation = !config.enableCameraAnimation;
   }
   if (key === "s") {
     if (!config.enableFill) {
@@ -158,10 +169,10 @@ function updateCamera() {
   myCam.lookAt.lerp(myCam.desiredLookAt, 0.005);
 
   if (random() < 0.001) {
-    myCam.desiredPos = randomCamPos();
+    randomiseCameraPosition();
   }
   if (random() < 0.001) {
-    myCam.desiredLookAt = randomLookAtPos();
+    randomiseCameraLookAt();
   }
 }
 
@@ -189,7 +200,7 @@ function randomLookAtPos() {
  * @returns Palette
  */
 function createPalette() {
-  return random([createPalette1, createPalette2])();
+  return random([createPalette1, createPalette2, createPalette3])();
 }
 /**
  * @returns Palette
@@ -241,4 +252,40 @@ function createPalette1() {
     guidelines: colours[0],
     placementOutline: "#404040",
   };
+}
+/**
+ *
+ * @returns {Palette}
+ */
+function createPalette3() {
+  const kgolidPalette = {
+    name: "rag-taj",
+    colors: ["#ce565e", "#8e1752", "#f8a100", "#3ac1a6"],
+    background: "#efdea2",
+    size: 4,
+    type: "chromotome",
+  };
+  /**
+   * @type {Palette}
+   */
+  const ret = {
+    allColours: kgolidPalette.colors,
+    bg: kgolidPalette.background,
+    placementOutline: random(kgolidPalette.colors),
+    guidelines: "#202020",
+  };
+  return ret;
+}
+
+function randomiseCameraPosition() {
+  myCam.desiredPos = randomCamPos();
+}
+function randomiseCameraLookAt() {
+  myCam.desiredLookAt = randomLookAtPos();
+}
+
+function assignColours() {
+  placements.forEach((p) => {
+    p.colour = random(palette.allColours);
+  });
 }
