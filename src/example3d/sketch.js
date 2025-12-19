@@ -46,7 +46,7 @@ function regenerate() {
     cellSize: width / 20,
     gap: 5,
     baseHeightScale: 2,
-    enableStroke: true,
+    enableStroke: frameCount < 2 ? true : random() < 0.2,
     enableTransparent: false,
     enableCameraAnimation: true,
     enableFill: true,
