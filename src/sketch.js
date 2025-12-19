@@ -68,25 +68,16 @@ function draw() {
  * @returns {boolean}
  */
 function isEmpty(pos, placements) {
-  return emptyCheck(pos, placements).empty;
-}
-/**
- * @param {Pos} pos
- * @param {Placement[]} placements
- * @returns {{empty: true} | {empty: false, firstCollision: Placement}}
- */
-function emptyCheck(pos, placements) {
-  const firstCollision = placements.find((placement) =>
+  return !placements.some((placement) =>
     placementCoversPosition(placement, pos)
   );
-  return firstCollision ? { empty: false, firstCollision } : { empty: true };
 }
 
 function createAndDrawIrregularGrid() {
   const allCellPositions = generateAllCellPositions();
   const placements = makePlacements(allCellPositions);
-  drawCellGuides();
   drawPlacements(placements);
+  drawCellGuidelines();
 }
 /**
  *
@@ -97,15 +88,17 @@ function drawPlacements(placements) {
 
   placements.forEach((pl) => {
     push();
+    strokeWeight(3);
     stroke(palette.placementOutline);
     translate(pl.pos.x * cellSize, pl.pos.y * cellSize);
-    fill(pl.colour);
+    const c = color(pl.colour);
+    fill(c);
     rect(0, 0, cellSize * pl.dims.w, cellSize * pl.dims.h);
     pop();
   });
 }
 
-function drawCellGuides() {
+function drawCellGuidelines() {
   const { cellSize } = config;
   for (let x = 0; x < width + cellSize; x += cellSize) {
     for (let y = 0; y < width + cellSize; y += cellSize) {
@@ -153,30 +146,17 @@ function generateAllCellPositions() {
  * @param {Placement[]} pls
  */
 function attemptPlacement(pos, pls) {
-  //TODO: consider whether this non 1x1 shape fits
+  const dims = { w: random([1, 2, 3]), h: random([1, 2, 3]) };
+  const allPosns = calcAllPositionsFrom(pos, dims);
 
-  const emptyResult = emptyCheck(pos, pls);
-  if (emptyResult.empty === true) {
-    const w = random([1, 2, 3]);
-    const h = random([1, 2, 3]);
-
+  if (allPosns.every((p) => isEmpty(p, pls))) {
     /**@type {Placement} */
     const placement = {
-      dims: { w, h },
+      dims,
       pos: { x: pos.x, y: pos.y },
       colour: random(palette.allColours),
     };
     pls.push(placement);
-    return { successful: true, data: placement };
-  } else {
-    return {
-      successful: false,
-      data: {
-        pos,
-        reason: "not empty",
-        firstCollision: emptyResult.firstCollision,
-      },
-    };
   }
 }
 
@@ -188,10 +168,7 @@ function attemptPlacement(pos, pls) {
 function makePlacements(allCellPositions) {
   /** @type {Placement[]} */
   const pls = [];
-
-  const results = allCellPositions.map((pos) => attemptPlacement(pos, pls));
-  const [_plsWrapped, skips] = partition(results, (r) => r.successful);
-  console.log({ skips });
+  allCellPositions.map((pos) => attemptPlacement(pos, pls));
   return pls;
 }
 
@@ -212,4 +189,19 @@ function partition(arr, predFn) {
     target.push(element);
   }
   return [arrA, arrB];
+}
+/**
+ *
+ * @param {Pos} pos
+ * @param {Dims} dims
+ * @returns {Pos[]}
+ */
+function calcAllPositionsFrom(pos, dims) {
+  const positions = [];
+  for (let x = pos.x; x < pos.x + dims.w; x++) {
+    for (let y = pos.y; y < pos.y + dims.h; y++) {
+      positions.push({ x, y });
+    }
+  }
+  return positions;
 }
