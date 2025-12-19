@@ -1,3 +1,7 @@
+// credits:
+// including some Kjetil Golid palettes from https://github.com/kgolid/chromotome via https://nice-colours-quicker.netlify.app/
+// and some Roni Kaufman ones: https://ronikaufman.github.io/color_pals/
+
 /**
  * @type {Palette}
  */
@@ -164,6 +168,9 @@ function keyPressed() {
   }
   if (key === "g") {
     config.gap = random([0.1, 5, 10, 15, 20].filter((v) => v !== config.gap));
+  }
+  if (key === "v") {
+    save("grid-3d");
   }
 }
 
