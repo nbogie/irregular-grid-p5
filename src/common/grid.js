@@ -61,14 +61,18 @@ function generateAllCellPositions(cellSize) {
  *
  * @param {Pos} pos
  * @param {ShapeGenFn} shapeGenFn
- *
  * @param {Placement[]} pls
+ * @param {Pos[]} allCellPositions
  */
-function attemptPlacement(pos, shapeGenFn, pls) {
+function attemptPlacement(pos, shapeGenFn, pls, allCellPositions) {
   const dims = random(shapeGenFn());
-  const allPosns = calcAllPositionsFrom(pos, dims);
+  const allCoveredPosns = calcAllPositionsFrom(pos, dims);
 
-  if (allPosns.every((p) => isEmpty(p, pls))) {
+  if (
+    allCoveredPosns.every(
+      (p) => isValidPos(p, allCellPositions) && isEmpty(p, pls)
+    )
+  ) {
     /**@type {Placement} */
     const placement = {
       dims,
@@ -95,9 +99,13 @@ function makePlacements(allCellPositions) {
     { w: 7, h: 7 },
   ];
   const shapeGenSingle = () => [{ w: 1, h: 1 }];
-  allCellPositions.map((pos) => attemptPlacement(pos, shapeGenMain1, pls));
+  allCellPositions.map((pos) =>
+    attemptPlacement(pos, shapeGenMain1, pls, allCellPositions)
+  );
 
-  allCellPositions.map((pos) => attemptPlacement(pos, shapeGenSingle, pls));
+  allCellPositions.map((pos) =>
+    attemptPlacement(pos, shapeGenSingle, pls, allCellPositions)
+  );
   return pls;
 }
 
@@ -126,4 +134,12 @@ function isEmpty(pos, placements) {
   return !placements.some((placement) =>
     placementCoversPosition(placement, pos)
   );
+}
+/**
+ *
+ * @param {Pos} p
+ * @param {Pos[]} legalPosns
+ */
+function isValidPos(p, legalPosns) {
+  return legalPosns.find((lp) => lp.x === p.x && p.y === lp.y);
 }
