@@ -22,8 +22,10 @@ let myCam;
 /** @typedef {Object} Config
  * @property {number} cellSize
  * @property {number} gap
+ * @property {number} baseHeightScale
  * @property {boolean} enableStroke
  * @property {boolean} enableFill
+ * @property {boolean} enableLights
  * @property {boolean} enableTransparent
  * @property {boolean} enableCameraAnimation
  * @property {number} worldWidth
@@ -42,20 +44,22 @@ function regenerate() {
   palette = createPalette();
   config = {
     cellSize: width / 20,
-    gap: 0.1,
+    gap: 5,
+    baseHeightScale: 2,
     enableStroke: false,
     enableTransparent: false,
     enableCameraAnimation: true,
     enableFill: true,
-
+    enableLights: true,
     worldWidth: width,
   };
   placements = createIrregularGrid(config.cellSize).map((p) => ({
     ...p,
     colour: random(palette.allColours),
-    heightScale: random(0.5, 1),
+    heightScale: snapTo(random(0.5, 1), 0.1),
   }));
   setBodyBackgroundAsDarkerThan(palette.bg);
+
   myCam = {
     pos: randomCamPos(),
     desiredPos: randomCamPos(),
@@ -70,8 +74,10 @@ function draw() {
   if (config.enableCameraAnimation) {
     updateCamera();
   }
-  lights();
-  directionalLight(color(100), createVector(-0.5, 1, 0.2));
+  if (config.enableLights) {
+    lights();
+    directionalLight(color(100), createVector(-0.5, 1, 0.2));
+  }
   drawPlacements3D(placements);
 }
 
@@ -103,7 +109,7 @@ function drawPlacements3D(placements) {
     }
     const w = cellSize * pl.dims.w;
     const h = cellSize * pl.dims.h;
-    const d = cellSize * 3 * pl.heightScale;
+    const d = cellSize * config.baseHeightScale * pl.heightScale;
     translate(w / 2, -d / 2, h / 2);
     if (config.enableFill) {
       fill(c);
@@ -132,10 +138,14 @@ function keyPressed() {
   if (key === "p") {
     palette = createPalette();
     assignColours();
+    setBodyBackgroundAsDarkerThan(palette.bg);
   }
   if (key === "f") {
     config.enableFill = !config.enableFill;
     config.enableStroke = !config.enableFill;
+  }
+  if (key === "l") {
+    config.enableLights = !config.enableLights;
   }
   if (key === "c") {
     config.enableCameraAnimation = !config.enableCameraAnimation;
@@ -151,7 +161,7 @@ function keyPressed() {
     config.enableTransparent = !config.enableTransparent;
   }
   if (key === "g") {
-    config.gap = config.gap < 1 ? 10 : 0.1;
+    config.gap = random([0.1, 5, 10, 15, 20].filter((v) => v !== config.gap));
   }
 }
 
@@ -200,7 +210,12 @@ function randomLookAtPos() {
  * @returns Palette
  */
 function createPalette() {
-  return random([createPalette1, createPalette2, createPalette3])();
+  return random([
+    createPalette1,
+    createPalette2,
+    createPalette3,
+    createPalette4,
+  ])();
 }
 /**
  * @returns Palette
@@ -277,6 +292,27 @@ function createPalette3() {
   return ret;
 }
 
+function createPalette4() {
+  const kg = {
+    name: "iiso_airlines",
+    colors: ["#fe765a", "#ffb468", "#4b588f", "#faf1e0"],
+    stroke: "#1c1616",
+    background: "#fae5c8",
+    size: 4,
+    type: "chromotome",
+  };
+  /**
+   * @type {Palette}
+   */
+  const ret = {
+    allColours: kg.colors,
+    bg: kg.background,
+    guidelines: kg.stroke,
+    placementOutline: kg.stroke,
+  };
+  return ret;
+}
+
 function randomiseCameraPosition() {
   myCam.desiredPos = randomCamPos();
 }
@@ -288,4 +324,12 @@ function assignColours() {
   placements.forEach((p) => {
     p.colour = random(palette.allColours);
   });
+}
+/**
+ *
+ * @param {number} val
+ * @param {number} inc
+ */
+function snapTo(val, inc) {
+  return inc * round(val / inc);
 }
