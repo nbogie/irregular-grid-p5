@@ -195,7 +195,7 @@ function randomCamPos() {
     return createVector(0, -700, -300);
   }
   const p = p5.Vector.fromAngle(random(TWO_PI), 400);
-  return createVector(p.x, random(-200, -100), p.y);
+  return createVector(p.x, random(-700, -100), p.y);
 }
 function randomLookAtPos() {
   const p = p5.Vector.fromAngle(random(TWO_PI), random(0, config.worldWidth));
