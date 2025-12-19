@@ -191,6 +191,9 @@ function updateCamera() {
  * @returns {p5.Vector}
  */
 function randomCamPos() {
+  if (random() < 0.1) {
+    return createVector(0, -700, -300);
+  }
   const p = p5.Vector.fromAngle(random(TWO_PI), 400);
   return createVector(p.x, random(-200, -100), p.y);
 }
