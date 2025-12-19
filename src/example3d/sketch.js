@@ -46,7 +46,7 @@ function regenerate() {
     cellSize: width / 20,
     gap: 5,
     baseHeightScale: 2,
-    enableStroke: false,
+    enableStroke: true,
     enableTransparent: false,
     enableCameraAnimation: true,
     enableFill: true,
@@ -197,6 +197,7 @@ function randomCamPos() {
   const p = p5.Vector.fromAngle(random(TWO_PI), 400);
   return createVector(p.x, random(-700, -100), p.y);
 }
+
 function randomLookAtPos() {
   const p = p5.Vector.fromAngle(random(TWO_PI), random(0, config.worldWidth));
   return createVector(p.x, random(0, -100), p.y);
@@ -213,6 +214,9 @@ function randomLookAtPos() {
  * @returns Palette
  */
 function createPalette() {
+  if (frameCount < 2) {
+    return createPalette4();
+  }
   return random([
     createPalette1,
     createPalette2,
@@ -319,6 +323,7 @@ function createPalette4() {
 function randomiseCameraPosition() {
   myCam.desiredPos = randomCamPos();
 }
+
 function randomiseCameraLookAt() {
   myCam.desiredLookAt = randomLookAtPos();
 }
@@ -335,4 +340,9 @@ function assignColours() {
  */
 function snapTo(val, inc) {
   return inc * round(val / inc);
+}
+
+function windowResized() {
+  const dim = min(windowWidth, windowHeight);
+  resizeCanvas(dim, dim);
 }
