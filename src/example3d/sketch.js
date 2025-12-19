@@ -42,7 +42,7 @@ function setup() {
 
   createCanvas(dim, dim, WEBGL);
   setCanvasDropShadow();
-  perspective(2 * atan(height / 2 / 800), width / height, 1, 2000);
+  perspective(2 * atan(height / 2 / 800), width / height, 1, 3000);
   regenerate();
 }
 
