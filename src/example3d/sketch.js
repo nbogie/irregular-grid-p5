@@ -33,9 +33,10 @@ let myCam;
  */
 
 function setup() {
-  const dim = min(windowWidth, windowHeight);
+  const dim = min(windowWidth, windowHeight) - 50;
 
   createCanvas(dim, dim, WEBGL);
+  setCanvasDropShadow();
   perspective(2 * atan(height / 2 / 800), width / height, 1, 2000);
   regenerate();
 }
@@ -48,9 +49,9 @@ function regenerate() {
     baseHeightScale: 2,
     enableStroke: frameCount < 2 ? true : random() < 0.2,
     enableTransparent: false,
-    enableCameraAnimation: true,
+    enableCameraAnimation: false,
     enableFill: true,
-    enableLights: true,
+    enableLights: frameCount < 2 ? false : random() < 0.9,
     worldWidth: width,
   };
   placements = createIrregularGrid(config.cellSize).map((p) => ({
@@ -66,6 +67,7 @@ function regenerate() {
     desiredLookAt: createVector(0, 0, 0),
     lookAt: createVector(0, 0, 0),
   };
+  updateCamera();
 }
 
 function draw() {
@@ -343,6 +345,12 @@ function snapTo(val, inc) {
 }
 
 function windowResized() {
-  const dim = min(windowWidth, windowHeight);
+  const dim = min(windowWidth, windowHeight) - 50;
   resizeCanvas(dim, dim);
+}
+
+function setCanvasDropShadow() {
+  Array.from(document.getElementsByTagName("canvas")).forEach((cnv) => {
+    cnv.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.2)";
+  });
 }
