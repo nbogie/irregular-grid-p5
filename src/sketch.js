@@ -77,7 +77,7 @@ function createAndDrawIrregularGrid() {
   const allCellPositions = generateAllCellPositions();
   const placements = makePlacements(allCellPositions);
   drawPlacements(placements);
-  drawCellGuidelines();
+  // drawCellGuidelines();
 }
 /**
  *
@@ -141,12 +141,17 @@ function generateAllCellPositions() {
 }
 
 /**
+ * @typedef {()=>Dims[]} ShapeGenFn
+ */
+/**
  *
  * @param {Pos} pos
+ * @param {ShapeGenFn} shapeGenFn
+ *
  * @param {Placement[]} pls
  */
-function attemptPlacement(pos, pls) {
-  const dims = { w: random([1, 2, 3]), h: random([1, 2, 3]) };
+function attemptPlacement(pos, shapeGenFn, pls) {
+  const dims = random(shapeGenFn());
   const allPosns = calcAllPositionsFrom(pos, dims);
 
   if (allPosns.every((p) => isEmpty(p, pls))) {
@@ -168,7 +173,18 @@ function attemptPlacement(pos, pls) {
 function makePlacements(allCellPositions) {
   /** @type {Placement[]} */
   const pls = [];
-  allCellPositions.map((pos) => attemptPlacement(pos, pls));
+  const shapeGenMain1 = () => [{ w: random([2, 5]), h: random([1, 2, 3]) }];
+  const shapeGenMain2 = () => [
+    { w: 5, h: 1 },
+    { w: 1, h: 6 },
+    { w: 2, h: 3 },
+    { w: 4, h: 4 },
+    { w: 7, h: 7 },
+  ];
+  const shapeGenSingle = () => [{ w: 1, h: 1 }];
+  allCellPositions.map((pos) => attemptPlacement(pos, shapeGenMain1, pls));
+
+  allCellPositions.map((pos) => attemptPlacement(pos, shapeGenSingle, pls));
   return pls;
 }
 
